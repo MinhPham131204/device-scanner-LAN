@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:paddingHorizontal="16dp"
+    android:paddingTop="12dp">
+    <FrameLayout
+        android:id="@+id/flIconContainer"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+    >
+        <ImageView
+            android:id="@+id/ivDeviceIcon"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            app:tint="@android:color/white"
+            tools:src="@android:drawable/ic_menu_camera"
+        />
+
+        <View
+            android:id="@+id/vOnlineIndicator"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_gravity="bottom|end"
+            android:background="@drawable/bg_online_dot" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/llCenterInfo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@id/flIconContainer"
+        app:layout_constraintEnd_toStartOf="@+id/llEndInfo"
+        app:layout_constraintStart_toEndOf="@id/flIconContainer"
+        app:layout_constraintTop_toTopOf="@id/flIconContainer">
+
+        <TextView
+            android:id="@+id/tvDeviceName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            tools:text="samsung SM-A156E" />
+
+        <TextView
+            android:id="@+id/tvDeviceIp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="#AAAAAA"
+            android:textSize="12sp"
+            tools:text="192.168.1.223" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llEndInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:gravity="end"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@id/flIconContainer"
+        app:layout_constraintEnd_toStartOf="@id/ivActionIcon"
+        app:layout_constraintTop_toTopOf="@id/flIconContainer">
+
+        <TextView
+            android:id="@+id/tvDeviceBrand"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            tools:text="Samsung" />
+
+        <TextView
+            android:id="@+id/tvDeviceModel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="#AAAAAA"
+            android:textSize="12sp"
+            tools:text="Galaxy A15 5G" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/ivActionIcon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        app:layout_constraintBottom_toBottomOf="@id/flIconContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/flIconContainer"
+        app:tint="#AAAAAA"
+        tools:src="@android:drawable/ic_media_play" />
+
+    <View
+        android:id="@+id/dividerLine"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="10dp" android:background="#2D2D2D"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/llCenterInfo"
+        app:layout_constraintTop_toBottomOf="@id/flIconContainer"
+    />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -66,4 +66,6 @@ dependencies {
 
     // Thêm thư viện Google Material Design
     implementation("com.google.android.material:material:1.14.0") // Hoặc phiên bản mới nhất
+
+    implementation("androidx.navigation:navigation-compose:2.9.8")
 }

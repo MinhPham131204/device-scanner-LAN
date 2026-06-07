@@ -1,10 +1,12 @@
 package com.application.lanscanner.ui.deviceList
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.application.lanscanner.data.model.DeviceType
+import com.application.lanscanner.data.dataSource.coreScanner.PingScanner
 import com.application.lanscanner.data.model.LanDevice
-import kotlinx.coroutines.delay
+import com.application.lanscanner.data.repository.NetworkRepository
+import com.application.lanscanner.utils.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,47 +14,45 @@ import kotlinx.coroutines.launch
 
 class DeviceListViewModel : ViewModel() {
 
-    // 1. Trạng thái nội bộ (_uiState): Có thể thay đổi, chỉ ViewModel mới được phép ghi
     private val _uiState = MutableStateFlow<DeviceListState>(DeviceListState.Idle)
-
-    // 2. Trạng thái công khai (uiState): View (Compose) chỉ được phép đọc (Observe)
     val uiState: StateFlow<DeviceListState> = _uiState.asStateFlow()
 
-    init {
-        // Tự động bắt đầu quét khi ViewModel được khởi tạo (khi mở màn hình)
-        startScan()
-    }
+    // Khởi tạo Repository (Sau này nếu dùng Hilt/Dagger, bạn sẽ Inject nó vào constructor)
+    private val pingScanner = PingScanner()
+    private val networkRepository = NetworkRepository(pingScanner)
 
-    fun startScan() {
-        // Ngăn chặn việc bấm quét nhiều lần cùng lúc
+    fun startScan(context: Context) {
         if (_uiState.value is DeviceListState.Loading) return
-
         _uiState.value = DeviceListState.Loading
 
-        // Khởi chạy Coroutine gắn với vòng đời của ViewModel
         viewModelScope.launch {
             try {
-                // TODO: Sau này bạn sẽ gọi NetworkRepository ở đây
-                // val devices = repository.scanLanNetwork("192.168.1.0/24")
+                // 1. Lấy thông tin mạng (Subnet, Base IP, v.v.)
+                val networkInfo = NetworkUtils.getLocalNetworkDetails(context)
 
-                // --- BẮT ĐẦU DỮ LIỆU GIẢ LẬP (Mock Data) ---
-                delay(2000) // Giả lập độ trễ quét mạng mất 2 giây
+                if (networkInfo == null) {
+                    _uiState.value = DeviceListState.Error("Không tìm thấy kết nối mạng LAN (Wi-Fi/Ethernet).")
+                    return@launch
+                }
 
-                val mockDevices = listOf(
-                    LanDevice("192.168.1.1", "Bộ định tuyến", deviceType = DeviceType.ROUTER),
-                    LanDevice("192.168.1.5", "Chung"),
-                    LanDevice("192.168.1.85", "Chung"),
-                    LanDevice("192.168.1.115", "Chung"),
-                    LanDevice("192.168.1.223", "samsung SM-A156E", brand = "Samsung", model = "Galaxy A15 5G", deviceType = DeviceType.PHONE),
-                )
-                // --- KẾT THÚC DỮ LIỆU GIẢ LẬP ---
+                val numOfHosts = 1 shl (32 - networkInfo.prefixLength)
 
-                // Trả kết quả thành công về cho UI
-                _uiState.value = DeviceListState.Success(mockDevices)
+                val currentDevices = mutableListOf<LanDevice>()
+
+                // 2. Gọi Repository để bắt đầu hứng dữ liệu quét được
+                networkRepository.scanLanDevices(networkInfo.baseIp, numOfHosts)
+                    .collect { newDevice ->
+                        // Thêm thiết bị mới vào danh sách
+                        currentDevices.add(newDevice)
+
+                        // Cập nhật lại trạng thái UI với danh sách mới nhất
+                        _uiState.value = DeviceListState.Success(
+                            devices = currentDevices.toList(),
+                        )
+                    }
 
             } catch (e: Exception) {
-                // Xử lý nếu có lỗi mạng
-                _uiState.value = DeviceListState.Error(e.message ?: "Đã xảy ra lỗi khi quét LAN")
+                _uiState.value = DeviceListState.Error(e.message ?: "Lỗi không xác định khi quét mạng.")
             }
         }
     }

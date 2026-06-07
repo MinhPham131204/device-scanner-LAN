@@ -7,6 +7,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,12 +21,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-
+// TODO: Sửa lại đường dẫn import này cho khớp với package dự án của bạn
 import com.application.lanscanner.data.model.DeviceType
 import com.application.lanscanner.data.model.LanDevice
+import com.application.lanscanner.utils.NetworkUtils
 
-// Định nghĩa màu sắc theo ảnh chụp
+// --- ĐỊNH NGHĨA MÀU SẮC ---
 val DarkBackground = Color(0xFF000000)
 val DarkSurface = Color(0xFF121212)
 val TextGray = Color(0xFFAAAAAA)
@@ -33,12 +35,14 @@ val OnlineGreen = Color(0xFF4CAF50)
 val BannerPurple = Color(0xFF3B2D4A)
 val DividerColor = Color(0xFF2D2D2D)
 
+// --- GIAO DIỆN CHÍNH ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FingDeviceListScreen(
     devices: List<LanDevice>,
-    subnetName: String = "Net 192.168.1.0/24",
-    onUpdateClick: () -> Unit
+    subnetName: String,
+    onUpdateClick: () -> Unit,
+    onDeviceClick: (LanDevice) -> Unit,
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf("Thiết bị", "Mạng")
@@ -47,7 +51,6 @@ fun FingDeviceListScreen(
         containerColor = DarkBackground,
         topBar = {
             Column {
-                // Top App Bar
                 TopAppBar(
                     title = { Text(subnetName, color = Color.White, fontSize = 20.sp) },
                     navigationIcon = {
@@ -63,14 +66,13 @@ fun FingDeviceListScreen(
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBackground)
                 )
 
-                // Tabs
                 ScrollableTabRow(
                     selectedTabIndex = selectedTabIndex,
                     containerColor = DarkBackground,
                     contentColor = Color.White,
                     edgePadding = 16.dp,
                     indicator = { tabPositions ->
-                        TabRowDefaults.Indicator(
+                        SecondaryIndicator(
                             Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
                             color = FingBlue
                         )
@@ -99,7 +101,6 @@ fun FingDeviceListScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Promo Banner
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -112,7 +113,6 @@ fun FingDeviceListScreen(
                 Icon(Icons.Default.Close, contentDescription = "Close", tint = TextGray, modifier = Modifier.size(18.dp))
             }
 
-            // Status Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -120,36 +120,48 @@ fun FingDeviceListScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text("${devices.size} thiết bị", color = Color.White, fontSize = 14.sp)
-                Text("2 phút trước", color = Color.White, fontSize = 14.sp)
             }
 
-            // Device List
+            // Đã tích hợp key tối ưu hóa cho dữ liệu Real-time
             LazyColumn {
-                items(devices) { device ->
-                    FingDeviceItem(device = device)
-                    Divider(color = DividerColor, thickness = 1.dp, modifier = Modifier.padding(start = 64.dp, end = 16.dp))
+                items(
+                    items = devices,
+                    key = { device -> device.ipAddress }
+                ) { device ->
+                    FingDeviceItem(
+                        device = device,
+                        onClick = { onDeviceClick(device) }
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(start = 64.dp, end = 16.dp),
+                        thickness = 1.dp,
+                        color = DividerColor
+                    )
                 }
             }
         }
     }
 }
 
+// --- COMPONENT: 1 DÒNG THIẾT BỊ ---
 @Composable
-fun FingDeviceItem(device: LanDevice) {
+fun FingDeviceItem(device: LanDevice, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* Tương tác click */ }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .clickable { onClick() }
+            // Tương đương paddingHorizontal="16dp", paddingTop="12dp"
+            // padding bottom="10dp" tương đương với phần marginTop của dividerLine
+            .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Icon với chấm xanh online
+        // Khối Icon chứa Box 40dp, Icon 28dp và Chấm xanh 12dp
         Box(modifier = Modifier.size(40.dp), contentAlignment = Alignment.Center) {
             Icon(
                 imageVector = when (device.deviceType) {
                     DeviceType.ROUTER -> Icons.Default.Router
                     DeviceType.PHONE -> Icons.Default.Smartphone
-                    DeviceType.GENERIC -> Icons.Default.Adjust // Icon circle cho thiết bị chung
+                    DeviceType.GENERIC -> Icons.Default.Adjust
                 },
                 contentDescription = null,
                 tint = Color.White,
@@ -161,43 +173,74 @@ fun FingDeviceItem(device: LanDevice) {
                         .size(12.dp)
                         .align(Alignment.BottomEnd)
                         .background(DarkBackground, CircleShape)
-                        .padding(2.dp)
+                        .padding(2.dp) // Tạo hiệu ứng viền đen chia cắt
                         .clip(CircleShape)
                         .background(OnlineGreen)
                 )
             }
         }
 
+        // Tương đương layout_marginStart="16dp" của llCenterInfo
         Spacer(modifier = Modifier.width(16.dp))
 
-        // Thông tin thiết bị (Tên và IP)
+        // Khối thông tin trung tâm (llCenterInfo)
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = device.name, color = Color.White, fontSize = 16.sp)
-            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = device.name,
+                color = Color.White,
+                fontSize = 14.sp // Cập nhật theo textSize="14sp"
+            )
+            // Tương đương layout_marginTop="6dp"
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = formatIpAddress(device.ipAddress),
-                fontSize = 14.sp
+                fontSize = 12.sp // Cập nhật theo textSize="12sp"
             )
         }
 
-        // Thông tin phụ bên phải (Brand, Model, Icon Wifi/Mũi tên)
+        // Khoảng trống linh hoạt tương đương layout_marginEnd="8dp" của llCenterInfo
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Khối thông tin bên phải (llEndInfo)
         if (device.brand != null && device.model != null) {
             Column(horizontalAlignment = Alignment.End) {
-                Text(text = device.brand, color = Color.White, fontSize = 14.sp)
-                Text(text = device.model, color = TextGray, fontSize = 12.sp)
+                Text(
+                    text = device.brand,
+                    color = Color.White,
+                    fontSize = 14.sp // Cập nhật theo textSize="14sp"
+                )
+                // Tương đương layout_marginTop="6dp"
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = device.model,
+                    color = TextGray,
+                    fontSize = 12.sp // Cập nhật theo textSize="12sp"
+                )
             }
+            // Tương đương layout_marginEnd="8dp" của llEndInfo
             Spacer(modifier = Modifier.width(8.dp))
         }
 
+        // Icon mũi tên/wifi bên góc phải (ivActionIcon) - Kích thước 20dp
         if (device.deviceType == DeviceType.ROUTER) {
-            Icon(Icons.Default.Wifi, contentDescription = "Wifi", tint = Color.White, modifier = Modifier.size(20.dp))
+            Icon(
+                imageVector = Icons.Default.Wifi,
+                contentDescription = "Wifi",
+                tint = Color.White,
+                modifier = Modifier.size(20.dp)
+            )
         } else {
-            Icon(Icons.Default.ChevronRight, contentDescription = "More", tint = TextGray, modifier = Modifier.size(20.dp))
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = "More",
+                tint = TextGray,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }
 
-// Hàm hỗ trợ in đậm octet cuối cùng của địa chỉ IP
+// --- HÀM HỖ TRỢ ĐỊNH DẠNG IP ---
 @Composable
 fun formatIpAddress(ip: String) = buildAnnotatedString {
     val lastDotIndex = ip.lastIndexOf('.')

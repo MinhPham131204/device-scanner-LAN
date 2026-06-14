@@ -12,15 +12,12 @@ class NetworkRepository(
 ) {
     fun scanLanDevices(networkAddress: String, numOfHosts: Int): Flow<LanDevice> {
         return pingScanner.scanSubnetRealtime(networkAddress, numOfHosts)
-            .map { activeIp ->
-                // Biến đổi (Map) dữ liệu thô thành Model của ứng dụng
+            .map { result -> // PingResult
                 LanDevice(
-                    ipAddress = activeIp,
-                    name = "Generic"
+                    ipAddress = result.ipAddress,
+                    name = result.hostname // Đã có tên thiết bị thực tế!
                 )
             }
-            // Đảm bảo toàn bộ quá trình xử lý data diễn ra trên luồng nền (IO Thread)
-            // giúp giao diện UI không bị đơ giật.
             .flowOn(Dispatchers.IO)
     }
 }

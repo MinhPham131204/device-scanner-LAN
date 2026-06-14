@@ -7,9 +7,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.net.InetAddress
+
+data class PingResult(
+    val ipAddress: String,
+    val hostname: String
+)
 
 class PingScanner {
-    fun scanSubnetRealtime(networkAddress: String, numOfHosts: Int): Flow<String> = channelFlow {
+    fun scanSubnetRealtime(networkAddress: String, numOfHosts: Int): Flow<PingResult> = channelFlow {
         val startIpLong = ipToLong(networkAddress)
 
         (1 until numOfHosts - 1).forEach { i ->
@@ -23,7 +29,11 @@ class PingScanner {
                 val isAlive = pingIpAddress(targetIp)
 
                 if (isAlive) {
-                    send(targetIp)
+                    // Kích hoạt lấy hostname NGAY SAU KHI biết thiết bị đang online
+                    val resolvedName = getHostName(targetIp)
+
+                    // Gửi cả IP và Hostname lên kênh
+                    send(PingResult(ipAddress = targetIp, hostname = resolvedName))
                 }
             }
         }
@@ -43,6 +53,23 @@ class PingScanner {
         } catch (e: Exception) {
             e.printStackTrace()
             return@withContext false
+        }
+    }
+
+    /**
+     * Dùng Reverse DNS để hỏi Router xem IP này tên là gì.
+     */
+    private suspend fun getHostName(ipAddress: String): String = withContext(Dispatchers.IO) {
+        try {
+            val inetAddress = InetAddress.getByName(ipAddress)
+            val hostname = inetAddress.hostName
+
+            if (hostname == ipAddress) {
+                return@withContext "Generic"
+            }
+            return@withContext hostname
+        } catch (e: Exception) {
+            return@withContext "Generic"
         }
     }
 }

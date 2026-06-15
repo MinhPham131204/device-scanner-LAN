@@ -42,6 +42,7 @@ val DividerColor = Color(0xFF2D2D2D)
 fun FingDeviceListScreen(
     devices: List<LanDevice>,
     subnetName: String,
+    isScanning: Boolean,
     onUpdateClick: () -> Unit,
     onDeviceClick: (LanDevice) -> Unit,
     onBackClick: () -> Unit
@@ -103,16 +104,17 @@ fun FingDeviceListScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(BannerPurple)
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Tự động quét và chặn thiết bị", color = TextGray, fontSize = 14.sp)
-                Icon(Icons.Default.Close, contentDescription = "Close", tint = TextGray, modifier = Modifier.size(18.dp))
+            if (isScanning) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(BannerPurple)
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center // Đổi thành Center để dòng chữ nằm giữa cho đẹp
+                ) {
+                    Text("Scanning devices...", color = Color.White, fontSize = 14.sp)
+                }
             }
 
             Row(

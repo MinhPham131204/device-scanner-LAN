@@ -126,6 +126,7 @@ fun DeviceListApp(onNavigateToPortScanner: (String) -> Unit, onBackClick: () -> 
                 FingDeviceListScreen(
                     devices = emptyList(),
                     subnetName = NetworkUtils.getSubnetName(networkInfo!!),
+                    isScanning = true,
                     onUpdateClick = { viewModel.startScan(context) },
                     onDeviceClick = { },
                     onBackClick = onBackClick
@@ -147,6 +148,7 @@ fun DeviceListApp(onNavigateToPortScanner: (String) -> Unit, onBackClick: () -> 
             FingDeviceListScreen(
                 devices = state.devices,
                 subnetName = NetworkUtils.getSubnetName(networkInfo!!), // Hiển thị tên Subnet thực tế
+                isScanning = false,
                 onUpdateClick = { viewModel.startScan(context) },
                 onDeviceClick = { clickedDevice ->
                     onNavigateToPortScanner(clickedDevice.ipAddress)

@@ -56,4 +56,16 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.androidx.material.icons.extended)
+
+    // Hỗ trợ setContent {} trong ComponentActivity
+    implementation(libs.androidx.activity.compose.v182)
+
+    // Hỗ trợ hàm viewModel() trong Compose
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
+
+    // Thêm thư viện Google Material Design
+    implementation("com.google.android.material:material:1.14.0") // Hoặc phiên bản mới nhất
+
+    implementation("androidx.navigation:navigation-compose:2.9.8")
 }

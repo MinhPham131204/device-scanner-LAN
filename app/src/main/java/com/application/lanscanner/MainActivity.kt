@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -30,7 +32,11 @@ import androidx.navigation.compose.rememberNavController
 import com.application.lanscanner.ui.deviceList.DeviceListState
 import com.application.lanscanner.ui.deviceList.DeviceListViewModel
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import com.application.lanscanner.utils.NetworkUtils
+import com.application.lanscanner.utils.rememberWifiConnectivityState
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,39 +54,53 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun NetworkScannerApp() {
-    // 1. Khởi tạo bộ điều khiển điều hướng
     val navController = rememberNavController()
 
-    // 2. Thiết lập NavHost với startDestination chỉ định màn hình đầu tiên
     NavHost(
         navController = navController,
-        startDestination = "device_list_route" // Màn hình này sẽ hiện ra đầu tiên
+        startDestination = "wifi_check_route" // Đổi đích đến mặc định
     ) {
 
-        // --- CÁC MÀN HÌNH TRONG APP ---
-
-        // Màn hình 1: Danh sách thiết bị
-        composable("device_list_route") {
-            DeviceListApp(
-                onNavigateToPortScanner = { targetIp ->
-                    // Cách chuyển sang màn hình khác kèm theo dữ liệu (IP)
-                    navController.navigate("port_scanner_route/$targetIp")
+        // --- Màn hình 1: Kiểm tra Wi-Fi ---
+        composable("wifi_check_route") {
+            WifiCheckScreen(
+                onScanClick = {
+                    // Chuyển sang màn hình danh sách thiết bị
+                    navController.navigate("device_list_route") {
+                        // Tùy chọn UX: Xóa màn hình check Wifi khỏi lịch sử (Backstack).
+                        // Nhờ vậy khi user bấm nút "Back" trên điện thoại, app sẽ thoát luôn
+                        // chứ không quay ngược lại màn hình chữ "Detect WiFi" nữa.
+                        popUpTo("wifi_check_route") { inclusive = true }
+                    }
                 }
             )
         }
 
-        // Màn hình 2: Quét Port (Dự trù cho tính năng tiếp theo)
-        composable("port_scanner_route/{ip}") { backStackEntry ->
-            val ipToScan = backStackEntry.arguments?.getString("ip") ?: ""
-            // Tạm thời hiển thị chữ để test chuyển màn hình
-            // PortScannerScreen(ip = ipToScan)
+        // --- Màn hình 2: Danh sách thiết bị (Giữ nguyên như cũ) ---
+        composable("device_list_route") {
+            DeviceListApp(
+                onNavigateToPortScanner = { targetIp ->
+                    navController.navigate("port_scanner_route/$targetIp")
+                },
+                onBackClick = {
+                    // Điều hướng quay về màn hình Wi-Fi, đồng thời xóa màn hình hiện tại khỏi bộ nhớ để giải phóng tài nguyên.
+                    navController.navigate("wifi_check_route") {
+                        popUpTo("device_list_route") { inclusive = true }
+                    }
+                }
+            )
         }
 
+        // --- Màn hình 3: Quét Port (Giữ nguyên) ---
+        composable("port_scanner_route/{ip}") { backStackEntry ->
+            val ipToScan = backStackEntry.arguments?.getString("ip") ?: ""
+            // PortScannerScreen(ip = ipToScan)
+        }
     }
 }
 
 @Composable
-fun DeviceListApp(onNavigateToPortScanner: (String) -> Unit) {
+fun DeviceListApp(onNavigateToPortScanner: (String) -> Unit, onBackClick: () -> Unit) {
     val viewModel: DeviceListViewModel = viewModel()
     val uiState by viewModel.uiState.collectAsState()
 
@@ -107,7 +127,8 @@ fun DeviceListApp(onNavigateToPortScanner: (String) -> Unit) {
                     devices = emptyList(),
                     subnetName = NetworkUtils.getSubnetName(networkInfo!!),
                     onUpdateClick = { viewModel.startScan(context) },
-                    onDeviceClick = { }
+                    onDeviceClick = { },
+                    onBackClick = onBackClick
                 )
 
                 // Vẽ vòng xoay đè lên giữa màn hình
@@ -129,7 +150,8 @@ fun DeviceListApp(onNavigateToPortScanner: (String) -> Unit) {
                 onUpdateClick = { viewModel.startScan(context) },
                 onDeviceClick = { clickedDevice ->
                     onNavigateToPortScanner(clickedDevice.ipAddress)
-                }
+                },
+                onBackClick = onBackClick
             )
         }
 
@@ -148,6 +170,53 @@ fun DeviceListApp(onNavigateToPortScanner: (String) -> Unit) {
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun WifiCheckScreen(onScanClick: () -> Unit) {
+    // Gọi hàm lắng nghe Wifi ở trên
+    val isWifiConnected by rememberWifiConnectivityState()
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black), // Giữ tông nền tối của app
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+            if (!isWifiConnected) {
+                Text(
+                    text = "The device is not connected to any WiFi network",
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center, // Đã sửa cú pháp đúng
+                    modifier = Modifier.padding(horizontal = 24.dp) // Thêm chút padding cho đẹp
+                )
+            } else {
+                Text(
+                    text = "Detect WiFi",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = onScanClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2196F3), // Màu nền của nút
+                        contentColor = Color.White          // Màu chữ và icon bên trong nút
+                    )
+                ) {
+                    Text("Scan devices")
+                }
+            }
+
         }
     }
 }

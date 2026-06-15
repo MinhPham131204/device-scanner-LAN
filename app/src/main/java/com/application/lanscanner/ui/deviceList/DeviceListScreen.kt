@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
@@ -43,6 +44,7 @@ fun FingDeviceListScreen(
     subnetName: String,
     onUpdateClick: () -> Unit,
     onDeviceClick: (LanDevice) -> Unit,
+    onBackClick: () -> Unit
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf("Thiết bị", "Mạng")
@@ -54,8 +56,8 @@ fun FingDeviceListScreen(
                 TopAppBar(
                     title = { Text(subnetName, color = Color.White, fontSize = 20.sp) },
                     navigationIcon = {
-                        IconButton(onClick = { /* Handle Back */ }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        IconButton(onClick = onBackClick) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                         }
                     },
                     actions = {

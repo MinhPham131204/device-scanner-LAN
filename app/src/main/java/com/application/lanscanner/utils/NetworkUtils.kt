@@ -1,11 +1,9 @@
 package com.application.lanscanner.utils
 
-import android.Manifest
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.LinkProperties
 import android.net.NetworkCapabilities
-import androidx.annotation.RequiresPermission
 import java.net.Inet4Address
 import kotlin.experimental.and
 

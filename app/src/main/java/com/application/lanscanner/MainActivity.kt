@@ -35,6 +35,11 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import com.application.lanscanner.data.repository.AppDatabase
+import com.application.lanscanner.data.repository.PortRepository
+import com.application.lanscanner.ui.portScanner.PortScannerScreen
+import com.application.lanscanner.ui.portScanner.PortScannerViewModel
 import com.application.lanscanner.utils.NetworkUtils
 import com.application.lanscanner.utils.rememberWifiConnectivityState
 
@@ -91,10 +96,32 @@ fun NetworkScannerApp() {
             )
         }
 
-        // --- Màn hình 3: Quét Port (Giữ nguyên) ---
+        // --- Màn hình 3: Quét Port ---
         composable("port_scanner_route/{ip}") { backStackEntry ->
             val ipToScan = backStackEntry.arguments?.getString("ip") ?: ""
-            // PortScannerScreen(ip = ipToScan)
+            val context = LocalContext.current
+
+            // 1. Khởi tạo tầng Data
+            val database = AppDatabase.getDatabase(context)
+            val repository = PortRepository(context, database.ianaPortDao())
+
+            // 2. Khởi tạo ViewModel kiểu mới (Ngắn gọn và không bị lỗi Type mismatch)
+            val portViewModel: PortScannerViewModel = viewModel {
+                PortScannerViewModel(repository)
+            }
+
+            // 3. Truyền IP vào ViewModel
+            LaunchedEffect(ipToScan) {
+                portViewModel.initTarget(ipToScan)
+            }
+
+            // 4. Gọi giao diện
+            PortScannerScreen(
+                viewModel = portViewModel,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }

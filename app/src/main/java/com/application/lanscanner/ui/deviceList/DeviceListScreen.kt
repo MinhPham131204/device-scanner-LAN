@@ -15,16 +15,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 // TODO: Sửa lại đường dẫn import này cho khớp với package dự án của bạn
 import com.application.lanscanner.data.model.DeviceType
 import com.application.lanscanner.data.model.LanDevice
+import com.application.lanscanner.ui.networkInfo.NetworkInfoScreen
+import com.application.lanscanner.ui.networkInfo.NetworkInfoViewModel
 import com.application.lanscanner.utils.NetworkUtils
 
 // --- ĐỊNH NGHĨA MÀU SẮC ---
@@ -45,10 +49,16 @@ fun FingDeviceListScreen(
     isScanning: Boolean,
     onUpdateClick: () -> Unit,
     onDeviceClick: (LanDevice) -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    networkInfoViewModel: NetworkInfoViewModel = viewModel()
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf("Thiết bị", "Mạng")
+
+    val context = LocalContext.current
+    LaunchedEffect(devices.size) {
+        networkInfoViewModel.fetchNetworkDetails(context, devices.size)
+    }
 
     Scaffold(
         containerColor = DarkBackground,
@@ -99,48 +109,57 @@ fun FingDeviceListScreen(
             }
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            if (isScanning) {
-                Row(
+        when (selectedTabIndex) {
+            0 -> {
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .background(BannerPurple)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center // Đổi thành Center để dòng chữ nằm giữa cho đẹp
+                        .fillMaxSize()
+                        .padding(paddingValues)
                 ) {
-                    Text("Scanning devices...", color = Color.White, fontSize = 14.sp)
+                    if (isScanning) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(BannerPurple)
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center // Đổi thành Center để dòng chữ nằm giữa cho đẹp
+                        ) {
+                            Text("Scanning devices...", color = Color.White, fontSize = 14.sp)
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("${devices.size} thiết bị", color = Color.White, fontSize = 14.sp)
+                    }
+
+                    // Đã tích hợp key tối ưu hóa cho dữ liệu Real-time
+                    LazyColumn {
+                        items(
+                            items = devices,
+                            key = { device -> device.ipAddress }
+                        ) { device ->
+                            FingDeviceItem(
+                                device = device,
+                                onClick = { onDeviceClick(device) }
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier.padding(start = 64.dp, end = 16.dp),
+                                thickness = 1.dp,
+                                color = DividerColor
+                            )
+                        }
+                    }
                 }
             }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("${devices.size} thiết bị", color = Color.White, fontSize = 14.sp)
-            }
-
-            // Đã tích hợp key tối ưu hóa cho dữ liệu Real-time
-            LazyColumn {
-                items(
-                    items = devices,
-                    key = { device -> device.ipAddress }
-                ) { device ->
-                    FingDeviceItem(
-                        device = device,
-                        onClick = { onDeviceClick(device) }
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(start = 64.dp, end = 16.dp),
-                        thickness = 1.dp,
-                        color = DividerColor
-                    )
+            1 -> {
+                Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+                    NetworkInfoScreen(viewModel = networkInfoViewModel)
                 }
             }
         }

@@ -4,7 +4,14 @@ import com.application.lanscanner.data.model.LanDevice
 
 sealed class DeviceListState {
     object Idle : DeviceListState()
-    object Loading : DeviceListState()
-    data class Success(val devices: List<LanDevice>) : DeviceListState()
+    data class Loading(
+        val devices: List<LanDevice> = emptyList(),
+        val subnetName: String = "Đang tải..." // Lưu tên mạng ngay trong State
+    ) : DeviceListState()
+
+    data class Success(
+        val devices: List<LanDevice>,
+        val subnetName: String
+    ) : DeviceListState()
     data class Error(val message: String) : DeviceListState()
 }

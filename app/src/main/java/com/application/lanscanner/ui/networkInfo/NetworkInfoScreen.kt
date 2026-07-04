@@ -130,7 +130,7 @@ fun NetworkInfoScreen(viewModel: NetworkInfoViewModel) {
         Text("Cài đặt mạng", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(16.dp))
         InfoRow(label = "Netmask", value = state.netmask)
-        InfoRow(label = "Cổng", value = "${state.gatewayIp} (${state.gatewayMac})")
+        InfoRow(label = "Cổng", value = state.gatewayIp)
         InfoRow(label = "DNS", value = state.dnsServers)
     }
 }

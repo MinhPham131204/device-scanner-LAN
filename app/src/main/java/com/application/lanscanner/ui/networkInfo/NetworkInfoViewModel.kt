@@ -16,6 +16,26 @@ class NetworkInfoViewModel : ViewModel() {
     val uiState: StateFlow<NetworkInfoState> = _uiState.asStateFlow()
 
     suspend fun fetchNetworkDetails(context: Context, deviceCount: Int) {
+
+        val networkInfo = NetworkUtils.getLocalNetworkDetails(context)
+
+        if (networkInfo == null) {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    subnetName = "Không tìm thấy mạng",
+                    location = "Offline",
+                    coordinates = "",
+                    bssid = "--:--:--:--:--:--",
+                    netmask = "---",
+                    gatewayIp = "---",
+                    dnsServers = "---",
+                    onlineDevices = 0,
+                    totalDevices = 0
+                )
+            }
+            return // Cực kỳ quan trọng: Lệnh này ngăn code chạy tiếp xuống bên dưới
+        }
+
         val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         val dhcpInfo = wifiManager.dhcpInfo
         val wifiInfo = wifiManager.connectionInfo
@@ -25,8 +45,7 @@ class NetworkInfoViewModel : ViewModel() {
         val netmaskStr = intToIp(dhcpInfo.netmask)
         val dnsStr = intToIp(dhcpInfo.dns1)
 
-        val networkInfo = NetworkUtils.getLocalNetworkDetails(context)
-        val subnetName = NetworkUtils.getSubnetName(networkInfo!!)
+        val subnetName = NetworkUtils.getSubnetName(networkInfo)
 
         val locationData = LocationHelper.getPublicLocation()
 
@@ -38,7 +57,7 @@ class NetworkInfoViewModel : ViewModel() {
                 coordinates = locationData.coordinates,
                 bssid = wifiInfo.bssid ?: "02:00:00:00:00:00",
                 netmask = netmaskStr,
-                gatewayIp = gatewayIpStr,
+                gatewayIp = "$gatewayIpStr (02:00:00:00:00:00)",
                 dnsServers = dnsStr,
                 onlineDevices = deviceCount,
                 totalDevices = deviceCount

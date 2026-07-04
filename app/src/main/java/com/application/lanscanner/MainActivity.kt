@@ -147,7 +147,7 @@ fun DeviceListApp(onNavigateToPortScanner: (String) -> Unit, onBackClick: () -> 
     when (val state = uiState) {
 
         // Gộp chung Idle và Loading để luôn hiển thị khung giao diện thay vì màn hình đen
-        is DeviceListState.Idle, is DeviceListState.Loading -> {
+        is DeviceListState.Idle -> {
             Box(modifier = Modifier.fillMaxSize()) {
                 // Vẫn vẽ giao diện Fing nhưng với danh sách rỗng
                 FingDeviceListScreen(
@@ -171,10 +171,21 @@ fun DeviceListApp(onNavigateToPortScanner: (String) -> Unit, onBackClick: () -> 
             }
         }
 
+        is DeviceListState.Loading -> {
+            FingDeviceListScreen(
+                devices = state.devices,
+                subnetName = state.subnetName,
+                isScanning = true,
+                onUpdateClick = { viewModel.startScan(context) },
+                onDeviceClick = {},
+                onBackClick = onBackClick
+            )
+        }
+
         is DeviceListState.Success -> {
             FingDeviceListScreen(
                 devices = state.devices,
-                subnetName = NetworkUtils.getSubnetName(networkInfo!!), // Hiển thị tên Subnet thực tế
+                subnetName = state.subnetName,
                 isScanning = false,
                 onUpdateClick = { viewModel.startScan(context) },
                 onDeviceClick = { clickedDevice ->

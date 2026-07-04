@@ -18,7 +18,6 @@ class DeviceListViewModel : ViewModel() {
     private val _uiState = MutableStateFlow<DeviceListState>(DeviceListState.Idle)
     val uiState: StateFlow<DeviceListState> = _uiState.asStateFlow()
 
-    // Khởi tạo Repository (Sau này nếu dùng Hilt/Dagger, bạn sẽ Inject nó vào constructor)
     private val pingScanner = PingScanner()
     private val networkRepository = NetworkRepository(pingScanner)
 
@@ -33,11 +32,9 @@ class DeviceListViewModel : ViewModel() {
                     return@launch
                 }
 
-                // Tính toán tên mạng CHỈ 1 LẦN tại đây
                 val calculatedSubnet = NetworkUtils.getSubnetName(networkInfo)
                 val numOfHosts = 1 shl (32 - networkInfo.prefixLength)
 
-                // Gán giá trị khởi tạo
                 _uiState.value = DeviceListState.Loading(
                     devices = emptyList(),
                     subnetName = calculatedSubnet
@@ -45,10 +42,8 @@ class DeviceListViewModel : ViewModel() {
 
                 networkRepository.scanLanDevices(networkInfo.baseIp, numOfHosts)
                     .collect { newDevice ->
-                        // SỬ DỤNG HÀM UPDATE ĐỂ ĐẢM BẢO AN TOÀN ĐA LUỒNG
                         _uiState.update { currentState ->
                             if (currentState is DeviceListState.Loading) {
-                                // Tạo list mới dựa trên list cũ + thiết bị mới, ép Compose phải vẽ lại
                                 currentState.copy(devices = currentState.devices + newDevice)
                             } else {
                                 currentState
@@ -56,7 +51,7 @@ class DeviceListViewModel : ViewModel() {
                         }
                     }
 
-                // Chuyển sang Success khi quét xong
+                // scan completed => convert state to success
                 _uiState.update { currentState ->
                     if (currentState is DeviceListState.Loading) {
                         DeviceListState.Success(

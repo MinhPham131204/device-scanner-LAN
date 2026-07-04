@@ -27,7 +27,6 @@ class PortScannerViewModel(
     private val _uiState = MutableStateFlow(PortScannerState())
     val uiState: StateFlow<PortScannerState> = _uiState.asStateFlow()
 
-    // Hàm gọi khi vừa điều hướng sang màn hình này
     fun initTarget(ip: String) {
         _uiState.update { it.copy(targetIp = ip) }
     }
@@ -54,7 +53,6 @@ class PortScannerViewModel(
             val portsToScan = 1..65535
             _uiState.update { it.copy(totalPortsToScan = portsToScan.last) }
 
-            // Giới hạn tổng thời gian quét (Ví dụ: 30 giây)
             val scanTimeoutMillis = 30_000L
 
             withTimeoutOrNull(scanTimeoutMillis) {
@@ -102,7 +100,6 @@ class PortScannerViewModel(
         scanJob?.cancel()
     }
 
-    // Hàm mở Socket cực nhanh (Timeout 300ms)
     private suspend fun checkPortOpen(ip: String, port: Int): Boolean {
         return try {
             runInterruptible {

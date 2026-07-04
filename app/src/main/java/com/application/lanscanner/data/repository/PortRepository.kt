@@ -9,7 +9,6 @@ import com.application.lanscanner.data.dataSource.database.iana_ports.IanaPortDa
 import com.application.lanscanner.data.dataSource.database.iana_ports.IanaPortDb
 import com.application.lanscanner.data.dataSource.database.iana_ports.IanaPortEntity
 
-// 1. Cấu hình Database
 @Database(entities = [IanaPortEntity::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun ianaPortDao(): IanaPortDao
@@ -32,8 +31,7 @@ abstract class AppDatabase : RoomDatabase() {
     }
 }
 
-// 2. Tầng Repository xử lý logic
-class PortRepository(private val context: Context, private val ianaPortDao: IanaPortDao) {
+class PortRepository(private val ianaPortDao: IanaPortDao) {
 
     suspend fun getIanaPorts(): List<IanaPortEntity> {
         // Kiểm tra xem DB đã có dữ liệu chưa

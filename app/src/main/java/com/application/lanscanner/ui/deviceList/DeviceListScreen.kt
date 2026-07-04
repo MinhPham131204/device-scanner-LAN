@@ -40,7 +40,7 @@ val OnlineGreen = Color(0xFF4CAF50)
 val BannerPurple = Color(0xFF3B2D4A)
 val DividerColor = Color(0xFF2D2D2D)
 
-// --- GIAO DIỆN CHÍNH ---
+// --- Main UI ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FingDeviceListScreen(
@@ -123,7 +123,7 @@ fun FingDeviceListScreen(
                                 .background(BannerPurple)
                                 .padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center // Đổi thành Center để dòng chữ nằm giữa cho đẹp
+                            horizontalArrangement = Arrangement.Center
                         ) {
                             Text("Scanning devices...", color = Color.White, fontSize = 14.sp)
                         }
@@ -138,7 +138,6 @@ fun FingDeviceListScreen(
                         Text("${devices.size} devices", color = Color.White, fontSize = 14.sp)
                     }
 
-                    // Đã tích hợp key tối ưu hóa cho dữ liệu Real-time
                     LazyColumn {
                         items(
                             items = devices,
@@ -166,19 +165,15 @@ fun FingDeviceListScreen(
     }
 }
 
-// --- COMPONENT: 1 DÒNG THIẾT BỊ ---
 @Composable
 fun FingDeviceItem(device: LanDevice, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            // Tương đương paddingHorizontal="16dp", paddingTop="12dp"
-            // padding bottom="10dp" tương đương với phần marginTop của dividerLine
             .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Khối Icon chứa Box 40dp, Icon 28dp và Chấm xanh 12dp
         Box(modifier = Modifier.size(40.dp), contentAlignment = Alignment.Center) {
             Icon(
                 imageVector = when (device.deviceType) {
@@ -196,55 +191,50 @@ fun FingDeviceItem(device: LanDevice, onClick: () -> Unit) {
                         .size(12.dp)
                         .align(Alignment.BottomEnd)
                         .background(DarkBackground, CircleShape)
-                        .padding(2.dp) // Tạo hiệu ứng viền đen chia cắt
+                        .padding(2.dp)
                         .clip(CircleShape)
                         .background(OnlineGreen)
                 )
             }
         }
 
-        // Tương đương layout_marginStart="16dp" của llCenterInfo
         Spacer(modifier = Modifier.width(16.dp))
 
-        // Khối thông tin trung tâm (llCenterInfo)
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = device.name,
                 color = Color.White,
-                fontSize = 14.sp // Cập nhật theo textSize="14sp"
+                fontSize = 14.sp
             )
-            // Tương đương layout_marginTop="6dp"
+
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = formatIpAddress(device.ipAddress),
-                fontSize = 12.sp // Cập nhật theo textSize="12sp"
+                fontSize = 12.sp
             )
         }
 
-        // Khoảng trống linh hoạt tương đương layout_marginEnd="8dp" của llCenterInfo
         Spacer(modifier = Modifier.width(8.dp))
 
-        // Khối thông tin bên phải (llEndInfo)
         if (device.brand != null && device.model != null) {
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = device.brand,
                     color = Color.White,
-                    fontSize = 14.sp // Cập nhật theo textSize="14sp"
+                    fontSize = 14.sp
                 )
-                // Tương đương layout_marginTop="6dp"
+
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = device.model,
                     color = TextGray,
-                    fontSize = 12.sp // Cập nhật theo textSize="12sp"
+                    fontSize = 12.sp
                 )
             }
-            // Tương đương layout_marginEnd="8dp" của llEndInfo
+
             Spacer(modifier = Modifier.width(8.dp))
         }
 
-        // Icon mũi tên/wifi bên góc phải (ivActionIcon) - Kích thước 20dp
         if (device.deviceType == DeviceType.ROUTER) {
             Icon(
                 imageVector = Icons.Default.Wifi,
@@ -263,7 +253,6 @@ fun FingDeviceItem(device: LanDevice, onClick: () -> Unit) {
     }
 }
 
-// --- HÀM HỖ TRỢ ĐỊNH DẠNG IP ---
 @Composable
 fun formatIpAddress(ip: String) = buildAnnotatedString {
     val lastDotIndex = ip.lastIndexOf('.')

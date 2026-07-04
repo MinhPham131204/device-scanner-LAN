@@ -6,7 +6,7 @@ sealed class DeviceListState {
     object Idle : DeviceListState()
     data class Loading(
         val devices: List<LanDevice> = emptyList(),
-        val subnetName: String = "Đang tải..." // Lưu tên mạng ngay trong State
+        val subnetName: String = "Unknown"
     ) : DeviceListState()
 
     data class Success(

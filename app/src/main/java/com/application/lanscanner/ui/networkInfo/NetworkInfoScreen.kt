@@ -40,7 +40,7 @@ fun NetworkInfoScreen(viewModel: NetworkInfoViewModel) {
             .background(DarkBackground)
             .padding(horizontal = 16.dp, vertical = 24.dp)
     ) {
-        // --- PHẦN 1: HEADER (Ảnh 1) ---
+        // --- Part 1: HEADER ---
         Text(
             text = state.subnetName,
             color = Color.White,
@@ -53,29 +53,28 @@ fun NetworkInfoScreen(viewModel: NetworkInfoViewModel) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .clickable(enabled = state.coordinates.isNotBlank()) {
-                    // Mở Google Maps khi bấm vào
                     val uri = "geo:${state.coordinates}?q=${state.coordinates}(Location)".toUri()
                     val intent = Intent(Intent.ACTION_VIEW, uri)
 
-                    // Ưu tiên mở bằng app Google Maps thay vì trình duyệt web
+                    // open location of network by GG Maps
                     intent.setPackage("com.google.android.apps.maps")
 
                     try {
                         context.startActivity(intent)
                     } catch (e: Exception) {
-                        // Nếu máy không cài Google Maps, bỏ package đi để mở bằng app bản đồ mặc định khác
+                        // If devices don't install Google Maps, ignore this package to open by another default location tracking app
                         intent.setPackage(null)
                         context.startActivity(intent)
                     }
                 }
-                .padding(vertical = 4.dp) // Tăng tiết diện bấm
+                .padding(vertical = 4.dp)
         ) {
             Text(
                 text = state.location,
                 color = TextGray,
                 fontSize = 18.sp
             )
-            // Có thể thêm 1 icon nhỏ kế bên để nhắc người dùng có thể bấm vào
+            // Intent icon
             if (state.coordinates.isNotBlank()) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
@@ -89,7 +88,6 @@ fun NetworkInfoScreen(viewModel: NetworkInfoViewModel) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Các Badge (WiFi và Thiết bị)
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             // Badge WiFi
             Row(
@@ -120,7 +118,7 @@ fun NetworkInfoScreen(viewModel: NetworkInfoViewModel) {
         HorizontalDivider(color = DividerDark, thickness = 1.dp)
         Spacer(modifier = Modifier.height(24.dp))
 
-        // --- PHẦN 2: CHI TIẾT MẠNG (Ảnh 2) ---
+        // --- Part 2: Network detail ---
         Text("Access points", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(16.dp))
         InfoRow(label = "BSSID", value = state.bssid)
@@ -135,7 +133,6 @@ fun NetworkInfoScreen(viewModel: NetworkInfoViewModel) {
     }
 }
 
-// Component dùng chung để vẽ từng dòng thông tin
 @Composable
 fun InfoRow(label: String, value: String) {
     Row(

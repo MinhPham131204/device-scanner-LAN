@@ -15,7 +15,7 @@ class NetworkRepository(
             .map { result -> // PingResult
                 LanDevice(
                     ipAddress = result.ipAddress,
-                    name = result.hostname // Đã có tên thiết bị thực tế!
+                    name = result.hostname
                 )
             }
             .flowOn(Dispatchers.IO)

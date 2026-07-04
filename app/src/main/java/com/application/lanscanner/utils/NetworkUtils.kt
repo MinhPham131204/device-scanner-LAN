@@ -16,16 +16,15 @@ data class NetworkDetails(
 object NetworkUtils {
 
     /**
-     * Lấy thông tin mạng LAN hiện tại của thiết bị
+     * Get LAN info
      */
     fun getLocalNetworkDetails(context: Context): NetworkDetails? {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-        // Lấy mạng đang active (thường là Wi-Fi)
         val network = connectivityManager.activeNetwork ?: return null
         val networkCapabilities = connectivityManager.getNetworkCapabilities(network) ?: return null
 
-        // Đảm bảo thiết bị đang kết nối Wi-Fi hoặc Ethernet (bỏ qua 4G/5G vì không quét LAN được)
+        // Ignore 4G/5G
         if (!networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) &&
             !networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
             return null
@@ -33,27 +32,26 @@ object NetworkUtils {
 
         val linkProperties: LinkProperties = connectivityManager.getLinkProperties(network) ?: return null
 
-        // Duyệt qua các địa chỉ IP của thiết bị (tìm IPv4)
+        // Traverse all active IP addresses of devices
         for (linkAddress in linkProperties.linkAddresses) {
             val inetAddress = linkAddress.address
 
-            // Chỉ lấy địa chỉ IPv4 và bỏ qua Loopback (127.0.0.1)
+            // only get IPv4 addresses and ignore Loopback (127.0.0.1)
             if (inetAddress is Inet4Address && !inetAddress.isLoopbackAddress) {
 
-                val deviceIp = inetAddress.hostAddress ?: continue
                 val prefixLength = linkAddress.prefixLength // VD: 24
 
-                // Tính toán địa chỉ Subnet gốc (Network Address) bằng Bitwise AND
+                // Compute Subnet (Network Address) by Bitwise AND
                 val ipBytes = inetAddress.address
                 val maskBytes = calculateMaskBytes(prefixLength)
 
                 val networkBytes = ByteArray(4)
                 for (i in 0..3) {
-                    // AND từng byte của IP với Subnet Mask
+                    // AND every byte of IP address with Subnet Mask
                     networkBytes[i] = (ipBytes[i] and maskBytes[i])
                 }
 
-                // Chuyển mảng byte thành chuỗi IP (VD: 192.168.1.0)
+                // Convert byte array to IP string (Ex: 192.168.1.0)
                 val networkAddress = "${networkBytes[0].toUByte()}.${networkBytes[1].toUByte()}.${networkBytes[2].toUByte()}.${networkBytes[3].toUByte()}"
 
                 return NetworkDetails(
@@ -66,7 +64,7 @@ object NetworkUtils {
     }
 
     /**
-     * Hàm hỗ trợ: Chuyển đổi Prefix (VD: 24) thành mảng byte Subnet Mask (VD: 255.255.255.0)
+     * Helper function: Convert Prefix (Ex: 24) to byte array Subnet Mask (Ex: 255.255.255.0)
      */
     private fun calculateMaskBytes(prefixLength: Int): ByteArray {
         val mask = -1 shl (32 - prefixLength) // Dịch bit để tạo mask int

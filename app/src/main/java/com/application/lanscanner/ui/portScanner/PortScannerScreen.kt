@@ -21,7 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Mã màu được trích xuất từ ảnh
+// Colors hex string
 val DarkBackground = Color(0xFF000000)
 val HeaderGray = Color(0xFF888888)
 val ActionBlue = Color(0xFF4285F4)
@@ -66,13 +66,13 @@ fun PortScannerScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Header: Máy chủ đích & Mở cổng
+            // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                // Cột trái
+                // left column
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Destination device", color = HeaderGray, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(8.dp))
@@ -92,7 +92,7 @@ fun PortScannerScreen(
                     }
                 }
 
-                // Dòng kẻ dọc ngăn cách
+                // separator
                 Box(
                     modifier = Modifier
                         .width(1.dp)
@@ -101,7 +101,7 @@ fun PortScannerScreen(
                         .align(Alignment.CenterVertically)
                 )
 
-                // Cột phải
+                // right column
                 Column(
                     modifier = Modifier
                         .weight(1f)

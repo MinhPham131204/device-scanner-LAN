@@ -20,19 +20,17 @@ class PingScanner {
 
         (1 until numOfHosts - 1).forEach { i ->
             launch(Dispatchers.IO) {
-                // Tính toán IP của thiết bị đích dưới dạng số
+
                 val currentIpLong = startIpLong + i
 
-                // Dịch ngược từ số về lại chuỗi IPv4 (VD: "192.168.1.5")
                 val targetIp = longToIp(currentIpLong)
 
                 val isAlive = pingIpAddress(targetIp)
 
                 if (isAlive) {
-                    // Kích hoạt lấy hostname NGAY SAU KHI biết thiết bị đang online
                     val resolvedName = getHostName(targetIp)
 
-                    // Gửi cả IP và Hostname lên kênh
+                    // send IP address + Hostname to Kotlin Flow
                     send(PingResult(ipAddress = targetIp, hostname = resolvedName))
                 }
             }
@@ -40,7 +38,7 @@ class PingScanner {
     }
 
     /**
-     * Thực thi lệnh Ping cấp thấp của hệ điều hành.
+     * Run Ping command
      */
     private suspend fun pingIpAddress(ipAddress: String): Boolean = withContext(Dispatchers.IO) {
         try {
@@ -57,7 +55,7 @@ class PingScanner {
     }
 
     /**
-     * Dùng Reverse DNS để hỏi Router xem IP này tên là gì.
+     * using Reverse DNS to get hostname of IP address
      */
     private suspend fun getHostName(ipAddress: String): String = withContext(Dispatchers.IO) {
         try {

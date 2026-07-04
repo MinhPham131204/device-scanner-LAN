@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.application.lanscanner.data.dataSource.coreScanner.PingScanner
-import com.application.lanscanner.data.model.LanDevice
 import com.application.lanscanner.data.repository.NetworkRepository
 import com.application.lanscanner.utils.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow

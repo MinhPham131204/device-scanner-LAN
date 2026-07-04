@@ -7,10 +7,9 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 
-// Data class đại diện cho 1 cổng
 data class IanaPort(
     val serviceName: String,
-    val portNumber: String, // Dùng String vì có những dải port như "1024-1025"
+    val portNumber: String,
     val description: String
 )
 

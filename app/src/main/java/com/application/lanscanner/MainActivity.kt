@@ -35,7 +35,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
 import com.application.lanscanner.data.repository.AppDatabase
 import com.application.lanscanner.data.repository.PortRepository
 import com.application.lanscanner.ui.portScanner.PortScannerScreen

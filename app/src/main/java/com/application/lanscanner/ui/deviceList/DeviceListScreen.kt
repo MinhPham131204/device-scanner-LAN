@@ -24,14 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-// TODO: Sửa lại đường dẫn import này cho khớp với package dự án của bạn
 import com.application.lanscanner.data.model.DeviceType
 import com.application.lanscanner.data.model.LanDevice
 import com.application.lanscanner.ui.networkInfo.NetworkInfoScreen
 import com.application.lanscanner.ui.networkInfo.NetworkInfoViewModel
-import com.application.lanscanner.utils.NetworkUtils
 
-// --- ĐỊNH NGHĨA MÀU SẮC ---
 val DarkBackground = Color(0xFF000000)
 val DarkSurface = Color(0xFF121212)
 val TextGray = Color(0xFFAAAAAA)

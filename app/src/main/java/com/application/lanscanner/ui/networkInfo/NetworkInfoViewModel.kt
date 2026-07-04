@@ -1,7 +1,6 @@
 package com.application.lanscanner.ui.networkInfo
 
 import android.content.Context
-import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
 import androidx.lifecycle.ViewModel
 import com.application.lanscanner.utils.LocationHelper

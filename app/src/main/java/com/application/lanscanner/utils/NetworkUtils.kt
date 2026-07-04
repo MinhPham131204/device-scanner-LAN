@@ -7,10 +7,9 @@ import android.net.NetworkCapabilities
 import java.net.Inet4Address
 import kotlin.experimental.and
 
-// Data class chứa kết quả trả về
 data class NetworkDetails(
-    val baseIp: String,         // VD: "192.168.1" (Dùng cho vòng lặp PingScanner)
-    val prefixLength: Int,      // VD: 24
+    val baseIp: String,         // Ex: "192.168.1"
+    val prefixLength: Int,      // Ex: 24
 )
 
 object NetworkUtils {

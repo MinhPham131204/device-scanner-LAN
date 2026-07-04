@@ -54,7 +54,7 @@ fun NetworkInfoScreen(viewModel: NetworkInfoViewModel) {
             modifier = Modifier
                 .clickable(enabled = state.coordinates.isNotBlank()) {
                     // Mở Google Maps khi bấm vào
-                    val uri = "geo:${state.coordinates}?q=${state.coordinates}(Vị trí mạng)".toUri()
+                    val uri = "geo:${state.coordinates}?q=${state.coordinates}(Location)".toUri()
                     val intent = Intent(Intent.ACTION_VIEW, uri)
 
                     // Ưu tiên mở bằng app Google Maps thay vì trình duyệt web
@@ -80,7 +80,7 @@ fun NetworkInfoScreen(viewModel: NetworkInfoViewModel) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.OpenInNew, // Nhớ import icon này
-                    contentDescription = "Mở bản đồ",
+                    contentDescription = "Open in GG Maps",
                     tint = ActionBlue, // Màu xanh như nút "BẮT ĐẦU" ở màn hình quét
                     modifier = Modifier.size(16.dp)
                 )
@@ -121,16 +121,16 @@ fun NetworkInfoScreen(viewModel: NetworkInfoViewModel) {
         Spacer(modifier = Modifier.height(24.dp))
 
         // --- PHẦN 2: CHI TIẾT MẠNG (Ảnh 2) ---
-        Text("Các điểm truy cập", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+        Text("Access points", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(16.dp))
         InfoRow(label = "BSSID", value = state.bssid)
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Text("Cài đặt mạng", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+        Text("Network Config", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(16.dp))
         InfoRow(label = "Netmask", value = state.netmask)
-        InfoRow(label = "Cổng", value = state.gatewayIp)
+        InfoRow(label = "Gateway", value = state.gatewayIp)
         InfoRow(label = "DNS", value = state.dnsServers)
     }
 }

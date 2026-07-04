@@ -166,7 +166,7 @@ fun DeviceListApp(onNavigateToPortScanner: (String) -> Unit, onBackClick: () -> 
                 ) {
                     CircularProgressIndicator(color = Color(0xFF2196F3))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Đang lấy thông tin mạng...", color = Color.White)
+                    Text("Retrieving info...", color = Color.White)
                 }
             }
         }
@@ -203,10 +203,10 @@ fun DeviceListApp(onNavigateToPortScanner: (String) -> Unit, onBackClick: () -> 
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "Lỗi: ${state.message}", color = Color.Red)
+                    Text(text = "Error: ${state.message}", color = Color.Red)
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { viewModel.startScan(context) }) {
-                        Text("Thử lại")
+                        Text("Retry")
                     }
                 }
             }

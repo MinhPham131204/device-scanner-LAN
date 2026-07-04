@@ -53,7 +53,7 @@ fun FingDeviceListScreen(
     networkInfoViewModel: NetworkInfoViewModel = viewModel()
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Thiết bị", "Mạng")
+    val tabs = listOf("Devices", "Network")
 
     val context = LocalContext.current
     LaunchedEffect(devices.size) {
@@ -73,7 +73,7 @@ fun FingDeviceListScreen(
                     },
                     actions = {
                         TextButton(onClick = onUpdateClick) {
-                            Text("CẬP NHẬT", color = FingBlue, fontWeight = FontWeight.Bold)
+                            Text("REFRESH", color = FingBlue, fontWeight = FontWeight.Bold)
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBackground)
@@ -135,7 +135,7 @@ fun FingDeviceListScreen(
                             .padding(horizontal = 16.dp, vertical = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("${devices.size} thiết bị", color = Color.White, fontSize = 14.sp)
+                        Text("${devices.size} devices", color = Color.White, fontSize = 14.sp)
                     }
 
                     // Đã tích hợp key tối ưu hóa cho dữ liệu Real-time

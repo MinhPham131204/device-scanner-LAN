@@ -41,7 +41,7 @@ fun PortScannerScreen(
         containerColor = DarkBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Tìm cổng mở", color = Color.White) },
+                title = { Text("Finding opening ports", color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.White)
@@ -50,7 +50,7 @@ fun PortScannerScreen(
                 actions = {
                     TextButton(onClick = { viewModel.toggleScan() }) {
                         Text(
-                            text = if (state.isScanning) "DỪNG" else "BẮT ĐẦU",
+                            text = if (state.isScanning) "STOP" else "START",
                             color = ActionBlue,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
@@ -74,7 +74,7 @@ fun PortScannerScreen(
             ) {
                 // Cột trái
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Máy chủ đích", color = HeaderGray, fontSize = 14.sp)
+                    Text("Destination device", color = HeaderGray, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
@@ -107,7 +107,7 @@ fun PortScannerScreen(
                         .weight(1f)
                         .padding(start = 16.dp)
                 ) {
-                    Text("Mở cổng", color = HeaderGray, fontSize = 14.sp)
+                    Text("No. opening ports", color = HeaderGray, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(

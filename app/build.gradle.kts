@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -12,15 +13,15 @@ android {
         applicationId = "com.application.lanscanner"
         minSdk = 23
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 10000
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -56,4 +57,22 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.androidx.material.icons.extended)
+
+    // Hỗ trợ setContent {} trong ComponentActivity
+    implementation(libs.androidx.activity.compose.v182)
+
+    // Hỗ trợ hàm viewModel() trong Compose
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
+
+    // Thêm thư viện Google Material Design
+    implementation("com.google.android.material:material:1.14.0") // Hoặc phiên bản mới nhất
+
+    implementation("androidx.navigation:navigation-compose:2.9.8")
+
+    implementation("androidx.room:room-runtime:2.8.4")
+
+    implementation("androidx.room:room-ktx:2.8.4")
+
+    ksp("androidx.room:room-compiler:2.8.4")
 }

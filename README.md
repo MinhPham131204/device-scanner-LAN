@@ -13,13 +13,13 @@ A lightweight, privacy-focused, and high-performance network discovery and port 
 
 The application architecture is structured around three core user interfaces built with modern declarative UI paradigms:
 1. **Device List Screen:** Displays a real-time list of all discovered online devices within the current subnet.
-   ![device_list](assets/device_list.jpg)
+   <img src="assets/device_list.jpg" alt="device_list" height="500">
 2. **Port Details Screen:** Appears when a device is selected, listing all detected open ports along with their corresponding protocol descriptions.
-   ![port_detail](assets/scan_port.jpg)
+   <img src="assets/scan_port.jpg" alt="port_detail" height="500">
 3. **Network Info Screen:** Provides a comprehensive breakdown of the current connection properties and geographical network location.
-   ![network_info](assets/network_info.jpg)
+   <img src="assets/network_info.jpg" alt="network_info" height="500">
 4. **Exception Screen:** Show error message when device disconnects from the network.
-   ![exception](assets/exception.jpg)
+   <img src="assets/exception.jpg" alt="exception" height="500">
 
 ## Non-Functional Requirements
 
@@ -32,3 +32,6 @@ The application architecture is structured around three core user interfaces bui
 - Android Studio Jellyfish or newer
 - Android SDK 23+ (Android 6.0 Marshmallow)
 - Kotlin 1.9+
+
+## Release Notes
+To see what has changed in recent versions, please read the [CHANGELOG](CHANGELOG.md).

@@ -34,25 +34,21 @@ abstract class AppDatabase : RoomDatabase() {
 class PortRepository(private val ianaPortDao: IanaPortDao) {
 
     suspend fun getIanaPorts(): List<IanaPortEntity> {
-        // Kiểm tra xem DB đã có dữ liệu chưa
         val count = ianaPortDao.getPortsCount()
 
         if (count == 0) {
-            // DB trống (Người dùng mở app lần đầu tiên)
-            // Gọi hàm fetchAndParse() từ mạng mà bạn đã viết
             val networkPorts = IanaPortDb.fetchAndParse()
 
-            // Chuyển đổi Data class thường sang Entity để lưu DB
             val entitiesToInsert = networkPorts.map {
                 IanaPortEntity(it.portNumber, it.serviceName, it.description)
             }
 
-            // Lưu xuống SQLite thông qua Room
+            // store in DB (SQLite) via Room
             ianaPortDao.insertAll(entitiesToInsert)
 
             return entitiesToInsert
         } else {
-            // Từ lần mở app thứ 2 trở đi, đọc thẳng từ Local DB vô cùng nhanh chóng
+            // // read from Local DB after first run
             return ianaPortDao.getAllPorts()
         }
     }

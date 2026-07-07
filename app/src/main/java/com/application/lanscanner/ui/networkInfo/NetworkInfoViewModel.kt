@@ -1,7 +1,6 @@
 package com.application.lanscanner.ui.networkInfo
 
 import android.content.Context
-import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
 import androidx.lifecycle.ViewModel
 import com.application.lanscanner.utils.LocationHelper
@@ -33,14 +32,14 @@ class NetworkInfoViewModel : ViewModel() {
                     totalDevices = 0
                 )
             }
-            return // Cực kỳ quan trọng: Lệnh này ngăn code chạy tiếp xuống bên dưới
+            return
         }
 
         val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         val dhcpInfo = wifiManager.dhcpInfo
         val wifiInfo = wifiManager.connectionInfo
 
-        // Chuyển đổi IP từ Int sang chuỗi String (Ví dụ: 192.168.1.1)
+        // Convert IP address from Int to String
         val gatewayIpStr = intToIp(dhcpInfo.gateway)
         val netmaskStr = intToIp(dhcpInfo.netmask)
         val dnsStr = intToIp(dhcpInfo.dns1)
@@ -49,7 +48,7 @@ class NetworkInfoViewModel : ViewModel() {
 
         val locationData = LocationHelper.getPublicLocation()
 
-        // Cập nhật State
+        // update State
         _uiState.update { currentState ->
             currentState.copy(
                 subnetName = subnetName,
@@ -65,7 +64,6 @@ class NetworkInfoViewModel : ViewModel() {
         }
     }
 
-    // Hàm phụ trợ dịch ngược IP tĩnh của Android
     private fun intToIp(ipInt: Int): String {
         return "${ipInt and 0xFF}.${ipInt shr 8 and 0xFF}.${ipInt shr 16 and 0xFF}.${ipInt shr 24 and 0xFF}"
     }

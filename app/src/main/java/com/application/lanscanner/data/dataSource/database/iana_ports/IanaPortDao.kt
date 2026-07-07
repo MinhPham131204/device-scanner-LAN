@@ -7,15 +7,15 @@ import androidx.room.Query
 
 @Dao
 interface IanaPortDao {
-    // Lấy toàn bộ dữ liệu port trong DB
+    // Get all port data in DB
     @Query("SELECT * FROM iana_ports")
     suspend fun getAllPorts(): List<IanaPortEntity>
 
-    // Lưu danh sách port mới vào DB, nếu trùng khóa chính thì ghi đè
+    // Store new ports list in DB
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(ports: List<IanaPortEntity>)
 
-    // Đếm số lượng bản ghi để kiểm tra xem DB đã có dữ liệu chưa
+    // Count the number of records to check if the database already contains data.
     @Query("SELECT COUNT(*) FROM iana_ports")
     suspend fun getPortsCount(): Int
 }

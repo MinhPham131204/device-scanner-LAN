@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -21,7 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Mã màu được trích xuất từ ảnh
+// Colors hex string
 val DarkBackground = Color(0xFF000000)
 val HeaderGray = Color(0xFF888888)
 val ActionBlue = Color(0xFF4285F4)
@@ -41,7 +40,7 @@ fun PortScannerScreen(
         containerColor = DarkBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Tìm cổng mở", color = Color.White) },
+                title = { Text("Finding opening ports", color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color.White)
@@ -50,7 +49,7 @@ fun PortScannerScreen(
                 actions = {
                     TextButton(onClick = { viewModel.toggleScan() }) {
                         Text(
-                            text = if (state.isScanning) "DỪNG" else "BẮT ĐẦU",
+                            text = if (state.isScanning) "STOP" else "START",
                             color = ActionBlue,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
@@ -66,15 +65,15 @@ fun PortScannerScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Header: Máy chủ đích & Mở cổng
+            // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                // Cột trái
+                // left column
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Máy chủ đích", color = HeaderGray, fontSize = 14.sp)
+                    Text("Destination device", color = HeaderGray, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
@@ -92,7 +91,7 @@ fun PortScannerScreen(
                     }
                 }
 
-                // Dòng kẻ dọc ngăn cách
+                // separator
                 Box(
                     modifier = Modifier
                         .width(1.dp)
@@ -101,13 +100,13 @@ fun PortScannerScreen(
                         .align(Alignment.CenterVertically)
                 )
 
-                // Cột phải
+                // right column
                 Column(
                     modifier = Modifier
                         .weight(1f)
                         .padding(start = 16.dp)
                 ) {
-                    Text("Mở cổng", color = HeaderGray, fontSize = 14.sp)
+                    Text("No. opening ports", color = HeaderGray, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(

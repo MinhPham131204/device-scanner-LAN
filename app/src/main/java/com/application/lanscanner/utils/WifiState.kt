@@ -13,16 +13,15 @@ fun rememberWifiConnectivityState(): State<Boolean> {
     val context = LocalContext.current
     val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-    // Trạng thái mặc định ban đầu
+    // default state
     val isConnected = remember { mutableStateOf(false) }
 
     DisposableEffect(connectivityManager) {
-        // 1. Kiểm tra trạng thái ngay lúc vừa mở app
         val activeNetwork = connectivityManager.activeNetwork
         val caps = connectivityManager.getNetworkCapabilities(activeNetwork)
         isConnected.value = caps?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
 
-        // 2. Lắng nghe sự thay đổi (Bật/Tắt Wifi) trong lúc app đang chạy
+        // listen state change when app is running
         val callback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
                 isConnected.value = true
@@ -32,14 +31,14 @@ fun rememberWifiConnectivityState(): State<Boolean> {
             }
         }
 
-        // Chỉ đăng ký nhận thông báo từ mạng Wi-Fi
+        // only sign up for notifications from Wifi
         val request = NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
             .build()
 
         connectivityManager.registerNetworkCallback(request, callback)
 
-        // Hủy đăng ký khi màn hình này bị đóng để tránh rò rỉ bộ nhớ
+        // Unsubscribe when this screen is closed.
         onDispose {
             connectivityManager.unregisterNetworkCallback(callback)
         }

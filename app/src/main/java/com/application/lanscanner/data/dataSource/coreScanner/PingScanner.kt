@@ -2,6 +2,7 @@ package com.application.lanscanner.data.dataSource.coreScanner
 
 import com.application.lanscanner.utils.NetworkUtils.ipToLong
 import com.application.lanscanner.utils.NetworkUtils.longToIp
+import com.application.lanscanner.utils.NetworkUtils.pingIpAddress
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
@@ -34,23 +35,6 @@ class PingScanner {
                     send(PingResult(ipAddress = targetIp, hostname = resolvedName))
                 }
             }
-        }
-    }
-
-    /**
-     * Run Ping command
-     */
-    private suspend fun pingIpAddress(ipAddress: String): Boolean = withContext(Dispatchers.IO) {
-        try {
-            val command = "/system/bin/ping -c 1 -W 1 $ipAddress"
-            val process = Runtime.getRuntime().exec(command)
-
-            val exitValue = process.waitFor()
-
-            return@withContext exitValue == 0
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return@withContext false
         }
     }
 

@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.LinkProperties
 import android.net.NetworkCapabilities
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.net.Inet4Address
 import kotlin.experimental.and
 
@@ -94,5 +96,22 @@ object NetworkUtils {
 
     fun longToIp(ip: Long): String {
         return "${(ip ushr 24) and 0xFF}.${(ip ushr 16) and 0xFF}.${(ip ushr 8) and 0xFF}.${ip and 0xFF}"
+    }
+
+    /**
+     * Run Ping command
+     */
+    suspend fun pingIpAddress(ipAddress: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val command = "/system/bin/ping -c 1 -W 1 $ipAddress"
+            val process = Runtime.getRuntime().exec(command)
+
+            val exitValue = process.waitFor()
+
+            return@withContext exitValue == 0
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return@withContext false
+        }
     }
 }

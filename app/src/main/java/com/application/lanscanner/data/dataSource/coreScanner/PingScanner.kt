@@ -1,13 +1,23 @@
 package com.application.lanscanner.data.dataSource.coreScanner
 
+import android.util.Log
+import com.application.lanscanner.utils.MDnsParser
 import com.application.lanscanner.utils.NetworkUtils.ipToLong
 import com.application.lanscanner.utils.NetworkUtils.longToIp
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import java.net.DatagramPacket
 import java.net.InetAddress
+import java.net.MulticastSocket
+import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
 
 data class PingResult(
     val ipAddress: String,
@@ -18,22 +28,74 @@ class PingScanner {
     fun scanSubnetRealtime(networkAddress: String, numOfHosts: Int): Flow<PingResult> = channelFlow {
         val startIpLong = ipToLong(networkAddress)
 
+        // create a Thread-safe Set that store IP of found devices
+        val discoveredIps = Collections.newSetFromMap(ConcurrentHashMap<String, Boolean>())
+
+        withTimeoutOrNull(15_000L) {
+            try {
+                // Initialize the socket and subscribe device in IPv4 mDNS group.
+                MulticastSocket(5353).use { socket ->
+                    val multicastGroup = InetAddress.getByName("224.0.0.251")
+                    socket.joinGroup(multicastGroup)
+                    socket.soTimeout = 15000
+
+                    val buffer = ByteArray(4096)
+
+                    // sniff packets in 15 seconds
+                    while (isActive) {
+                        val packet = DatagramPacket(buffer, buffer.size)
+                        socket.receive(packet) // stop thread to sniff packet
+
+                        val senderIp = packet.address.hostAddress ?: continue
+
+                        if (isIpInSubnet(senderIp, startIpLong, numOfHosts) && !discoveredIps.contains(senderIp)) {
+                            discoveredIps.add(senderIp)
+
+                            val extractedName = MDnsParser.extractHostname(packet.data, packet.length)
+
+                            Log.d("mdnsScanner", "Hostname of IP + $senderIp: $extractedName")
+
+                            val resolvedName = extractedName ?: getHostName(senderIp)
+
+                            // send to Kotlin Flow
+                            send(PingResult(ipAddress = senderIp, hostname = resolvedName))
+                        }
+                    }
+                    socket.leaveGroup(multicastGroup)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        // Ping the remaining IPs (not in the set).
         (1 until numOfHosts - 1).forEach { i ->
-            launch(Dispatchers.IO) {
+            val currentIpLong = startIpLong + i
+            val targetIp = longToIp(currentIpLong)
 
-                val currentIpLong = startIpLong + i
+            if (!discoveredIps.contains(targetIp)) {
+                launch(Dispatchers.IO) {
+                    val isAlive = pingIpAddress(targetIp)
 
-                val targetIp = longToIp(currentIpLong)
+                    if (isAlive) {
+                        val resolvedName = getHostName(targetIp)
 
-                val isAlive = pingIpAddress(targetIp)
-
-                if (isAlive) {
-                    val resolvedName = getHostName(targetIp)
-
-                    // send IP address + Hostname to Kotlin Flow
-                    send(PingResult(ipAddress = targetIp, hostname = resolvedName))
+                        send(PingResult(ipAddress = targetIp, hostname = resolvedName))
+                    }
                 }
             }
+        }
+    }
+
+    /**
+     * check IP is in active IP range of LAN or not.
+     */
+    private fun isIpInSubnet(ip: String, startLong: Long, numOfHosts: Int): Boolean {
+        return try {
+            val ipLong = ipToLong(ip)
+            ipLong in (startLong + 1) until (startLong + numOfHosts - 1)
+        } catch (e: Exception) {
+            false
         }
     }
 
@@ -42,15 +104,15 @@ class PingScanner {
      */
     private suspend fun pingIpAddress(ipAddress: String): Boolean = withContext(Dispatchers.IO) {
         try {
-            val command = "/system/bin/ping -c 1 -W 1 $ipAddress"
-            val process = Runtime.getRuntime().exec(command)
-
-            val exitValue = process.waitFor()
-
-            return@withContext exitValue == 0
+            runInterruptible {
+                val command = "/system/bin/ping -c 1 -W 1 $ipAddress"
+                val process = Runtime.getRuntime().exec(command)
+                val exitValue = process.waitFor()
+                exitValue == 0
+            }
         } catch (e: Exception) {
-            e.printStackTrace()
-            return@withContext false
+            if (e is CancellationException) throw e
+            false
         }
     }
 
@@ -59,15 +121,19 @@ class PingScanner {
      */
     private suspend fun getHostName(ipAddress: String): String = withContext(Dispatchers.IO) {
         try {
-            val inetAddress = InetAddress.getByName(ipAddress)
-            val hostname = inetAddress.hostName
+            runInterruptible {
+                val inetAddress = InetAddress.getByName(ipAddress)
+                val hostname = inetAddress.hostName
 
-            if (hostname == ipAddress) {
-                return@withContext "Generic"
+                if (hostname == ipAddress) {
+                    "Generic"
+                } else {
+                    hostname
+                }
             }
-            return@withContext hostname
         } catch (e: Exception) {
-            return@withContext "Generic"
+            if (e is CancellationException) throw e
+            "Generic"
         }
     }
 }

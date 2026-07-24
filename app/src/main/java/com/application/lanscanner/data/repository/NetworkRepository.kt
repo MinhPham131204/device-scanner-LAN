@@ -1,5 +1,6 @@
 package com.application.lanscanner.data.repository
 
+import android.content.Context
 import com.application.lanscanner.data.dataSource.coreScanner.PingScanner
 import com.application.lanscanner.data.model.LanDevice
 import kotlinx.coroutines.Dispatchers
@@ -10,8 +11,8 @@ import kotlinx.coroutines.flow.map
 class NetworkRepository(
     private val pingScanner: PingScanner
 ) {
-    fun scanLanDevices(networkAddress: String, numOfHosts: Int): Flow<LanDevice> {
-        return pingScanner.scanSubnetRealtime(networkAddress, numOfHosts)
+    fun scanLanDevices(networkAddress: String, numOfHosts: Int, context: Context): Flow<LanDevice> {
+        return pingScanner.scanSubnetRealtime(networkAddress, numOfHosts, context)
             .map { result -> // PingResult
                 LanDevice(
                     ipAddress = result.ipAddress,

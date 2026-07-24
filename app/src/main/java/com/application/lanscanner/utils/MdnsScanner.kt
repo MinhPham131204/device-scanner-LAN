@@ -13,6 +13,23 @@ object MDnsParser {
 
             var offset = 12 // start from first byte after DNS header
 
+            Log.d("mdnsScanner", "response packet content: " + readName(buffer, offset))
+
+            val appleService: Set<String> = setOf(
+                "_airplay._tcp.local",
+                "_companion-link._tcp.local",
+                "_raop._tcp.local",
+            )
+
+            val serviceType = readName(buffer, offset)
+
+            if(serviceType.startsWith("_googlecast")) {
+                return "Google Cast Device (Android)"
+            }
+            else if(appleService.contains(serviceType)){
+                return "Apple Device"
+            }
+
             val qdCount = ((buffer[4].toInt() and 0xFF) shl 8) or (buffer[5].toInt() and 0xFF) // question (bytes 4-5)
             val anCount = ((buffer[6].toInt() and 0xFF) shl 8) or (buffer[7].toInt() and 0xFF) // answer (bytes 6-7)
 

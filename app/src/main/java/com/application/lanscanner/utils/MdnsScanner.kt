@@ -36,8 +36,6 @@ object MDnsParser {
                 if (type == 12 || type == 33) {
                     val resolvedName = readName(buffer, offset)
 
-                    Log.d("mdnsScanner", "resolved name: $resolvedName")
-
                     // Filter out strings that are merely generic service names. (_http._tcp.local)
                     if (!resolvedName.startsWith("_")) {
                         return resolvedName

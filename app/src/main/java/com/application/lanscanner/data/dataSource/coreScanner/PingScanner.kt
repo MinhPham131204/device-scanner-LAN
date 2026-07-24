@@ -1,5 +1,7 @@
 package com.application.lanscanner.data.dataSource.coreScanner
 
+import android.content.Context
+import android.net.wifi.WifiManager
 import android.util.Log
 import com.application.lanscanner.utils.MDnsParser
 import com.application.lanscanner.utils.NetworkUtils.ipToLong
@@ -25,46 +27,59 @@ data class PingResult(
 )
 
 class PingScanner {
-    fun scanSubnetRealtime(networkAddress: String, numOfHosts: Int): Flow<PingResult> = channelFlow {
+    fun scanSubnetRealtime(networkAddress: String, numOfHosts: Int, context: Context): Flow<PingResult> = channelFlow {
         val startIpLong = ipToLong(networkAddress)
 
         // create a Thread-safe Set that store IP of found devices
         val discoveredIps = Collections.newSetFromMap(ConcurrentHashMap<String, Boolean>())
 
-        withTimeoutOrNull(15_000L) {
-            try {
-                // Initialize the socket and subscribe device in IPv4 mDNS group.
-                MulticastSocket(5353).use { socket ->
-                    val multicastGroup = InetAddress.getByName("224.0.0.251")
-                    socket.joinGroup(multicastGroup)
-                    socket.soTimeout = 15000
+        // Lưu ý: Cần truyền 'context' vào hàm hoặc class của bạn
+        val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val multicastLock = wifiManager.createMulticastLock("LANScanner_mDNS")
+        multicastLock.setReferenceCounted(true)
 
-                    val buffer = ByteArray(4096)
+        // Khóa sóng Wifi để bắt đầu hứng gói tin Multicast
+        multicastLock.acquire()
 
-                    // sniff packets in 15 seconds
-                    while (isActive) {
-                        val packet = DatagramPacket(buffer, buffer.size)
-                        socket.receive(packet) // stop thread to sniff packet
+        try {
+            withTimeoutOrNull(20_000L) {
+                try {
+                    // Initialize the socket and subscribe device in IPv4 mDNS group.
+                    MulticastSocket(5353).use { socket ->
+                        val multicastGroup = InetAddress.getByName("224.0.0.251")
+                        socket.joinGroup(multicastGroup)
+                        socket.soTimeout = 20000
 
-                        val senderIp = packet.address.hostAddress ?: continue
+                        val buffer = ByteArray(4096)
 
-                        if (isIpInSubnet(senderIp, startIpLong, numOfHosts) && !discoveredIps.contains(senderIp)) {
-                            discoveredIps.add(senderIp)
+                        // sniff packets in 20 seconds
+                        while (isActive) {
+                            val packet = DatagramPacket(buffer, buffer.size)
+                            socket.receive(packet) // stop thread to sniff packet
 
-                            val extractedName = MDnsParser.extractHostname(packet.data, packet.length)
+                            val senderIp = packet.address.hostAddress ?: continue
 
-                            Log.d("mdnsScanner", "Hostname of IP + $senderIp: $extractedName")
+                            if (isIpInSubnet(senderIp, startIpLong, numOfHosts) && !discoveredIps.contains(senderIp)) {
+                                discoveredIps.add(senderIp)
 
-                            val resolvedName = extractedName ?: getHostName(senderIp)
+                                val extractedName = MDnsParser.extractHostname(packet.data, packet.length)
 
-                            // send to Kotlin Flow
-                            send(PingResult(ipAddress = senderIp, hostname = resolvedName))
+                                val resolvedName = extractedName ?: getHostName(senderIp)
+
+                                // send to Kotlin Flow
+                                send(PingResult(ipAddress = senderIp, hostname = resolvedName))
+                            }
                         }
+                        socket.leaveGroup(multicastGroup)
                     }
-                    socket.leaveGroup(multicastGroup)
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            }
+        } finally {
+            // CỰC KỲ QUAN TRỌNG: Luôn nhả khóa khi kết thúc để tránh gây hao pin
+            if (multicastLock.isHeld) {
+                multicastLock.release()
             }
         }
 

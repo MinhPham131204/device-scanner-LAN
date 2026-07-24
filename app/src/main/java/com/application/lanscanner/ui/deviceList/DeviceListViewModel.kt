@@ -39,7 +39,7 @@ class DeviceListViewModel : ViewModel() {
                     subnetName = calculatedSubnet
                 )
 
-                networkRepository.scanLanDevices(networkInfo.baseIp, numOfHosts)
+                networkRepository.scanLanDevices(networkInfo.baseIp, numOfHosts, context)
                     .collect { newDevice ->
                         _uiState.update { currentState ->
                             if (currentState is DeviceListState.Loading) {

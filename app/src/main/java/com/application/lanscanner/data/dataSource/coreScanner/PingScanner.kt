@@ -2,7 +2,6 @@ package com.application.lanscanner.data.dataSource.coreScanner
 
 import android.content.Context
 import android.net.wifi.WifiManager
-import android.util.Log
 import com.application.lanscanner.utils.MDnsParser
 import com.application.lanscanner.utils.NetworkUtils.ipToLong
 import com.application.lanscanner.utils.NetworkUtils.longToIp

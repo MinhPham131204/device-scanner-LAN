@@ -1,7 +1,5 @@
 package com.application.lanscanner.utils
 
-import android.util.Log
-
 object MDnsParser {
 
     /**
@@ -12,8 +10,6 @@ object MDnsParser {
             if (packetLength < 12) return null // check header length == 12
 
             var offset = 12 // start from first byte after DNS header
-
-            Log.d("mdnsScanner", "response packet content: " + readName(buffer, offset))
 
             val appleService: Set<String> = setOf(
                 "_airplay._tcp.local",

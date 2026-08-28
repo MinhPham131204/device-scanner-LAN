@@ -35,7 +35,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
 import com.application.lanscanner.data.repository.AppDatabase
 import com.application.lanscanner.data.repository.PortRepository
 import com.application.lanscanner.ui.portScanner.PortScannerScreen
@@ -66,29 +65,26 @@ fun NetworkScannerApp() {
         startDestination = "wifi_check_route" // Đổi đích đến mặc định
     ) {
 
-        // --- Màn hình 1: Kiểm tra Wi-Fi ---
+        // --- Screen 1: Check Wifi state ---
         composable("wifi_check_route") {
             WifiCheckScreen(
                 onScanClick = {
-                    // Chuyển sang màn hình danh sách thiết bị
+                    // navigate to devices list screen
                     navController.navigate("device_list_route") {
-                        // Tùy chọn UX: Xóa màn hình check Wifi khỏi lịch sử (Backstack).
-                        // Nhờ vậy khi user bấm nút "Back" trên điện thoại, app sẽ thoát luôn
-                        // chứ không quay ngược lại màn hình chữ "Detect WiFi" nữa.
                         popUpTo("wifi_check_route") { inclusive = true }
                     }
                 }
             )
         }
 
-        // --- Màn hình 2: Danh sách thiết bị (Giữ nguyên như cũ) ---
+        // --- Screen 2: Devices list ---
         composable("device_list_route") {
             DeviceListApp(
                 onNavigateToPortScanner = { targetIp ->
                     navController.navigate("port_scanner_route/$targetIp")
                 },
                 onBackClick = {
-                    // Điều hướng quay về màn hình Wi-Fi, đồng thời xóa màn hình hiện tại khỏi bộ nhớ để giải phóng tài nguyên.
+                    // Back to screen 1
                     navController.navigate("wifi_check_route") {
                         popUpTo("device_list_route") { inclusive = true }
                     }
@@ -96,26 +92,22 @@ fun NetworkScannerApp() {
             )
         }
 
-        // --- Màn hình 3: Quét Port ---
+        // --- Screen 3: Port scanning ---
         composable("port_scanner_route/{ip}") { backStackEntry ->
             val ipToScan = backStackEntry.arguments?.getString("ip") ?: ""
             val context = LocalContext.current
 
-            // 1. Khởi tạo tầng Data
             val database = AppDatabase.getDatabase(context)
-            val repository = PortRepository(context, database.ianaPortDao())
+            val repository = PortRepository(database.ianaPortDao())
 
-            // 2. Khởi tạo ViewModel kiểu mới (Ngắn gọn và không bị lỗi Type mismatch)
             val portViewModel: PortScannerViewModel = viewModel {
                 PortScannerViewModel(repository)
             }
 
-            // 3. Truyền IP vào ViewModel
             LaunchedEffect(ipToScan) {
                 portViewModel.initTarget(ipToScan)
             }
 
-            // 4. Gọi giao diện
             PortScannerScreen(
                 viewModel = portViewModel,
                 onBackClick = {
@@ -131,25 +123,20 @@ fun DeviceListApp(onNavigateToPortScanner: (String) -> Unit, onBackClick: () -> 
     val viewModel: DeviceListViewModel = viewModel()
     val uiState by viewModel.uiState.collectAsState()
 
-    // 1. Lấy Context trực tiếp từ Jetpack Compose
     val context = LocalContext.current
 
     val networkInfo = NetworkUtils.getLocalNetworkDetails(context)
 
-    // 2. Tự động kích hoạt quét mạng ngay khi UI vừa được nạp lên
     LaunchedEffect(Unit) {
         if (viewModel.uiState.value is DeviceListState.Idle) {
             viewModel.startScan(context)
         }
     }
 
-    // 3. Phân nhánh UI
     when (val state = uiState) {
 
-        // Gộp chung Idle và Loading để luôn hiển thị khung giao diện thay vì màn hình đen
-        is DeviceListState.Idle, is DeviceListState.Loading -> {
+        is DeviceListState.Idle -> {
             Box(modifier = Modifier.fillMaxSize()) {
-                // Vẫn vẽ giao diện Fing nhưng với danh sách rỗng
                 FingDeviceListScreen(
                     devices = emptyList(),
                     subnetName = NetworkUtils.getSubnetName(networkInfo!!),
@@ -159,22 +146,32 @@ fun DeviceListApp(onNavigateToPortScanner: (String) -> Unit, onBackClick: () -> 
                     onBackClick = onBackClick
                 )
 
-                // Vẽ vòng xoay đè lên giữa màn hình
                 Column(
                     modifier = Modifier.align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    CircularProgressIndicator(color = Color(0xFF2196F3))
+                    CircularProgressIndicator(color = Color(0xFF2196F3)) // loading spinner
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Đang lấy thông tin mạng...", color = Color.White)
+                    Text("Retrieving info...", color = Color.White)
                 }
             }
+        }
+
+        is DeviceListState.Loading -> {
+            FingDeviceListScreen(
+                devices = state.devices,
+                subnetName = state.subnetName,
+                isScanning = true,
+                onUpdateClick = { viewModel.startScan(context) },
+                onDeviceClick = {},
+                onBackClick = onBackClick
+            )
         }
 
         is DeviceListState.Success -> {
             FingDeviceListScreen(
                 devices = state.devices,
-                subnetName = NetworkUtils.getSubnetName(networkInfo!!), // Hiển thị tên Subnet thực tế
+                subnetName = state.subnetName,
                 isScanning = false,
                 onUpdateClick = { viewModel.startScan(context) },
                 onDeviceClick = { clickedDevice ->
@@ -192,10 +189,10 @@ fun DeviceListApp(onNavigateToPortScanner: (String) -> Unit, onBackClick: () -> 
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "Lỗi: ${state.message}", color = Color.Red)
+                    Text(text = "Error: ${state.message}", color = Color.Red)
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { viewModel.startScan(context) }) {
-                        Text("Thử lại")
+                        Text("Retry")
                     }
                 }
             }
@@ -205,13 +202,12 @@ fun DeviceListApp(onNavigateToPortScanner: (String) -> Unit, onBackClick: () -> 
 
 @Composable
 fun WifiCheckScreen(onScanClick: () -> Unit) {
-    // Gọi hàm lắng nghe Wifi ở trên
     val isWifiConnected by rememberWifiConnectivityState()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black), // Giữ tông nền tối của app
+            .background(Color.Black),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -222,8 +218,8 @@ fun WifiCheckScreen(onScanClick: () -> Unit) {
                     color = Color.White,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center, // Đã sửa cú pháp đúng
-                    modifier = Modifier.padding(horizontal = 24.dp) // Thêm chút padding cho đẹp
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 24.dp)
                 )
             } else {
                 Text(
@@ -238,8 +234,8 @@ fun WifiCheckScreen(onScanClick: () -> Unit) {
                 Button(
                     onClick = onScanClick,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2196F3), // Màu nền của nút
-                        contentColor = Color.White          // Màu chữ và icon bên trong nút
+                        containerColor = Color(0xFF2196F3),
+                        contentColor = Color.White
                     )
                 ) {
                     Text("Scan devices")

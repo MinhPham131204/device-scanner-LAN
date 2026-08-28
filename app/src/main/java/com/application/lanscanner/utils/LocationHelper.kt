@@ -9,19 +9,18 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 data class LocationResult(
-    val address: String,     // Chứa "Can Tho, VN"
-    val coordinates: String  // Chứa "10.0371,105.7883"
+    val address: String,     // "Can Tho, VN"
+    val coordinates: String  // "10.0371,105.7883"
 )
 
 object LocationHelper {
 
     /**
-     * Trả về chuỗi dạng "City, Country, Location"
-     * Nếu lỗi mạng, trả về "Unknown Location"
+     * Retrun string "City, Country, Location"
+     * If network error, return "Unknown Location"
      */
     suspend fun getPublicLocation(): LocationResult = withContext(Dispatchers.IO) {
         try {
-            // Đổi sang endpoint của ipinfo.io
             val url = URL("https://ipinfo.io/json")
             val connection = url.openConnection() as HttpURLConnection
             connection.requestMethod = "GET"

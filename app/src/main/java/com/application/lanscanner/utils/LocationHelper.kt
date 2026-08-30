@@ -10,13 +10,14 @@ import java.net.URL
 
 data class LocationResult(
     val address: String,     // "Can Tho, VN"
+    val isp_org: String,
     val coordinates: String  // "10.0371,105.7883"
 )
 
 object LocationHelper {
 
     /**
-     * Retrun string "City, Country, Location"
+     * Return string "City, Country, Location"
      * If network error, return "Unknown Location"
      */
     suspend fun getPublicLocation(): LocationResult = withContext(Dispatchers.IO) {
@@ -39,12 +40,21 @@ object LocationHelper {
 
                 val jsonObject = JSONObject(response.toString())
 
-                val city = jsonObject.optString("region", "Unknown City")
+                val isp_org = jsonObject.optString("org", "Unknown org.").replaceFirst(
+                    Regex("^AS\\d+\\s+"), // ignore "(AS...)" string
+                    ""
+                )
+
+                val city = jsonObject.optString("region", "Unknown City").replace(
+                    Regex("\\s*\\([^()]*\\)$"), // ignore (...) string
+                    ""
+                )
                 val country = jsonObject.optString("country", "Unknown Country")
                 val loc = jsonObject.optString("loc", "")
 
                 return@withContext LocationResult(
                     address = "$city, $country",
+                    isp_org,
                     coordinates = loc
                 )
             }
@@ -52,6 +62,6 @@ object LocationHelper {
             e.printStackTrace()
         }
 
-        return@withContext LocationResult("Unknown Location", "")
+        return@withContext LocationResult("Unknown Location", "", "")
     }
 }

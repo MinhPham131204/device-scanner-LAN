@@ -37,9 +37,9 @@ fun NetworkInfoScreen(viewModel: NetworkInfoViewModel) {
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackground)
-            .padding(horizontal = 16.dp, vertical = 24.dp)
+            .padding(horizontal = 16.dp, vertical = 20.dp)
     ) {
-        // --- Part 1: HEADER ---
+        // --- HEADER ---
         Text(
             text = state.subnetName,
             color = Color.White,
@@ -47,43 +47,6 @@ fun NetworkInfoScreen(viewModel: NetworkInfoViewModel) {
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .clickable(enabled = state.coordinates.isNotBlank()) {
-                    val uri = "geo:${state.coordinates}?q=${state.coordinates}(Location)".toUri()
-                    val intent = Intent(Intent.ACTION_VIEW, uri)
-
-                    // open location of network by GG Maps
-                    intent.setPackage("com.google.android.apps.maps")
-
-                    try {
-                        context.startActivity(intent)
-                    } catch (e: Exception) {
-                        // If devices don't install Google Maps, ignore this package to open by another default location tracking app
-                        intent.setPackage(null)
-                        context.startActivity(intent)
-                    }
-                }
-                .padding(vertical = 4.dp)
-        ) {
-            Text(
-                text = state.location,
-                color = TextGray,
-                fontSize = 18.sp
-            )
-            // Intent icon
-            if (state.coordinates.isNotBlank()) {
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.OpenInNew, // Nhớ import icon này
-                    contentDescription = "Open in GG Maps",
-                    tint = ActionBlue, // Màu xanh như nút "BẮT ĐẦU" ở màn hình quét
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -118,14 +81,63 @@ fun NetworkInfoScreen(viewModel: NetworkInfoViewModel) {
         Spacer(modifier = Modifier.height(24.dp))
 
         // --- Part 2: Network detail ---
-        Text("Access points", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+        Text("ISP info", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(16.dp))
-        InfoRow(label = "BSSID", value = state.bssid)
+        InfoRow(label = "Organization", value = state.organization)
+        InfoRow(label = "ISP Location", value = state.location)
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Coordinate",
+                color = TextGray,
+                fontSize = 16.sp
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .clickable(enabled = state.coordinates.isNotBlank()) {
+                        val uri = "geo:${state.coordinates}?q=${state.coordinates}(Location)".toUri()
+                        val intent = Intent(Intent.ACTION_VIEW, uri)
+
+                        intent.setPackage("com.google.android.apps.maps")
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            intent.setPackage(null)
+                            context.startActivity(intent)
+                        }
+                    }
+                    .padding(horizontal = 4.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = state.coordinates,
+                    fontSize = 16.sp
+                )
+
+                if (state.coordinates.isNotBlank()) {
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                        contentDescription = "Open in GG Maps",
+                        tint = ActionBlue,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Text("Network Config", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+        Text("Network Info", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(16.dp))
+        InfoRow(label = "BSSID", value = state.bssid)
         InfoRow(label = "Netmask", value = state.netmask)
         InfoRow(label = "Gateway", value = state.gatewayIp)
         InfoRow(label = "DNS", value = state.dnsServers)

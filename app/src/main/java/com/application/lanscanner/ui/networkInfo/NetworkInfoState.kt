@@ -2,6 +2,7 @@ package com.application.lanscanner.ui.networkInfo
 
 data class NetworkInfoState(
     val subnetName: String = "",      // Ex: Net 192.168.1.0/24
+    val organization: String = "",
     val location: String = "",        // Ex: Can Tho, Việt Nam
     val coordinates: String = "",
     val isWifi: Boolean = true,

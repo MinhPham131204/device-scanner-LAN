@@ -52,6 +52,7 @@ class NetworkInfoViewModel : ViewModel() {
         _uiState.update { currentState ->
             currentState.copy(
                 subnetName = subnetName,
+                organization = locationData.isp_org,
                 location = locationData.address,
                 coordinates = locationData.coordinates,
                 bssid = wifiInfo.bssid ?: "02:00:00:00:00:00",
